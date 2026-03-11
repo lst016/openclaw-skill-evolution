@@ -1,0 +1,24 @@
+{
+  "name": "workflows",
+  "description": "存放 task type 对应 workflow",
+  "payload_schema": {
+    "workflow_id": {"type": "keyword"},
+    "task_type": {"type": "keyword"},
+    "description": {"type": "text"},
+    "steps": {"type": "text"},
+    "tool_order": {"type": "keyword", "array": true},
+    "success_rate": {"type": "float"},
+    "avg_score": {"type": "float"},
+    "usage_count": {"type": "integer"},
+    "version": {"type": "integer"},
+    "status": {"type": "keyword"},
+    "source_skill_id": {"type": "keyword"},
+    "created_at": {"type": "datetime"},
+    "updated_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["task_type", "description", "steps", "tool_order"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}

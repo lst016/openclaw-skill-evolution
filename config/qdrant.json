@@ -1,0 +1,26 @@
+{
+  "host": "localhost",
+  "port": 6333,
+  "collections": {
+    "skills": {
+      "vector_size": 1536,
+      "distance": "Cosine",
+      "on_disk": true
+    },
+    "workflows": {
+      "vector_size": 1536,
+      "distance": "Cosine", 
+      "on_disk": true
+    },
+    "experiences": {
+      "vector_size": 1536,
+      "distance": "Cosine",
+      "on_disk": true
+    },
+    "trajectories": {
+      "vector_size": 1536,
+      "distance": "Cosine",
+      "on_disk": true
+    }
+  }
+}

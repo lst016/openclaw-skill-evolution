@@ -1,0 +1,31 @@
+{
+  "enabled": true,
+  "auto_evolution": {
+    "daily_run": true,
+    "run_time": "01:00",
+    "timezone": "Asia/Shanghai"
+  },
+  "trajectory_logging": {
+    "enabled": true,
+    "include_failed": true,
+    "step_level_detail": true
+  },
+  "reflection": {
+    "enabled": true,
+    "auto_reflect": true
+  },
+  "experience_storage": {
+    "dedup_enabled": true,
+    "quality_threshold": 0.8
+  },
+  "skill_generation": {
+    "enabled": true,
+    "min_evidence_count": 3,
+    "stable_workflow_required": true
+  },
+  "policy_updates": {
+    "enabled": true,
+    "evidence_based_only": true,
+    "version_control": true
+  }
+}

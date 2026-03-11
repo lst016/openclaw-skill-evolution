@@ -1,0 +1,25 @@
+{
+  "name": "experiences",
+  "description": "存放高价值经验",
+  "payload_schema": {
+    "experience_id": {"type": "keyword"},
+    "title": {"type": "text"},
+    "problem_summary": {"type": "text"},
+    "solution_summary": {"type": "text"},
+    "workflow": {"type": "text"},
+    "score": {"type": "float"},
+    "success_count": {"type": "integer"},
+    "fail_count": {"type": "integer"},
+    "last_used_at": {"type": "datetime"},
+    "source_trajectory_id": {"type": "keyword"},
+    "tags": {"type": "keyword", "array": true},
+    "status": {"type": "keyword"},
+    "created_at": {"type": "datetime"},
+    "updated_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["title", "problem_summary", "solution_summary", "tags"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}

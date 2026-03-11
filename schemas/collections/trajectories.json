@@ -1,0 +1,24 @@
+{
+  "name": "trajectories",
+  "description": "存放完整任务轨迹",
+  "payload_schema": {
+    "trajectory_id": {"type": "keyword"},
+    "task": {"type": "text"},
+    "task_type": {"type": "keyword"},
+    "selected_skill": {"type": "keyword"},
+    "selected_workflow": {"type": "keyword"},
+    "steps": {"type": "text"},
+    "tools_used": {"type": "keyword", "array": true},
+    "outputs_summary": {"type": "text"},
+    "success": {"type": "boolean"},
+    "final_score": {"type": "float"},
+    "duration_ms": {"type": "integer"},
+    "reflection_id": {"type": "keyword"},
+    "created_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["task", "task_type", "outputs_summary"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}

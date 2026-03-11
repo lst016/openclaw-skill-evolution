@@ -1,0 +1,26 @@
+{
+  "name": "skills",
+  "description": "存放可复用 skill",
+  "payload_schema": {
+    "skill_id": {"type": "keyword"},
+    "skill_name": {"type": "keyword"},
+    "description": {"type": "text"},
+    "applicable_when": {"type": "text"},
+    "steps": {"type": "text"},
+    "required_tools": {"type": "keyword", "array": true},
+    "success_rate": {"type": "float"},
+    "avg_score": {"type": "float"},
+    "usage_count": {"type": "integer"},
+    "version": {"type": "integer"},
+    "status": {"type": "keyword"},
+    "source": {"type": "keyword"},
+    "tags": {"type": "keyword", "array": true},
+    "created_at": {"type": "datetime"},
+    "updated_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["skill_name", "description", "applicable_when", "tags"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}
