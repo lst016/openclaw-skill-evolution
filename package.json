@@ -1,0 +1,25 @@
+{
+  "name": "subagent-evolution",
+  "version": "1.0.0",
+  "description": "A framework for enabling continuous evolution and improvement of OpenClaw subagents",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "self-assess": "node index.js self-assess",
+    "extract-experience": "node index.js extract-experience",
+    "optimize-config": "node index.js optimize-config"
+  },
+  "keywords": [
+    "openclaw",
+    "subagent",
+    "evolution",
+    "ai",
+    "automation"
+  ],
+  "author": "牛牛",
+  "license": "MIT",
+  "dependencies": {
+    "fs-extra": "^11.2.0",
+    "commander": "^12.1.0"
+  }
+}
