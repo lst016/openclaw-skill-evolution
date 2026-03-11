@@ -1,0 +1,18 @@
+{
+  "name": "environment_nodes",
+  "description": "环境实体节点（文件、服务、数据库、API、模块、工具等）",
+  "payload_schema": {
+    "node_id": {"type": "keyword"},
+    "node_type": {"type": "keyword"},
+    "name": {"type": "text"},
+    "description": {"type": "text"},
+    "metadata": {"type": "json"},
+    "created_at": {"type": "datetime"},
+    "updated_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["name", "description"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "environment_events",
+  "description": "Stores environment change events for v5 Environment Learning Layer",
+  "payload_schema": {
+    "event_id": {"type": "keyword"},
+    "node_id": {"type": "keyword"},
+    "event_type": {"type": "keyword"},
+    "change_summary": {"type": "text"},
+    "timestamp": {"type": "datetime"},
+    "task_id": {"type": "keyword"},
+    "source_trajectory_id": {"type": "keyword"},
+    "severity": {"type": "keyword"},
+    "impact_scope": {"type": "keyword", "array": true},
+    "status": {"type": "keyword"},
+    "created_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["change_summary"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}
