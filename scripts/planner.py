@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Planner for OpenClaw Skill Evolution
+Planner for OpenClaw Skill Evolution (FIXED VERSION)
 Retrieves and selects optimal skills, workflows, and experiences for task execution
 """
 
@@ -73,7 +73,11 @@ class Planner:
                 }
             )
             
-            skills = [hit.payload for hit in search_result.points]
+            # Extract payloads from points
+            skills = []
+            for point in search_result.points:
+                skills.append(point.payload)
+            
             logger.info(f"🔍 Found {len(skills)} relevant skills")
             return skills
             
@@ -102,7 +106,11 @@ class Planner:
                 }
             )
             
-            workflows = [hit.payload for hit in search_result]
+            # Extract payloads from points
+            workflows = []
+            for point in search_result.points:
+                workflows.append(point.payload)
+            
             logger.info(f"🔍 Found {len(workflows)} relevant workflows")
             return workflows
             
@@ -122,7 +130,7 @@ class Planner:
             # Search in Qdrant
             search_result = self.qdrant_client.query_points(
                 collection_name="experiences",
-                query_vector=placeholder_embedding,
+                query=placeholder_embedding,
                 limit=limit,
                 query_filter={
                     "must": [
@@ -131,7 +139,11 @@ class Planner:
                 }
             )
             
-            experiences = [hit.payload for hit in search_result]
+            # Extract payloads from points
+            experiences = []
+            for point in search_result.points:
+                experiences.append(point.payload)
+            
             logger.info(f"🔍 Found {len(experiences)} relevant experiences")
             return experiences
             
