@@ -21,6 +21,16 @@
       "vector_size": 1536,
       "distance": "Cosine",
       "on_disk": true
+    },
+    "policies": {
+      "vector_size": 1536,
+      "distance": "Cosine",
+      "on_disk": true
+    },
+    "failures": {
+      "vector_size": 1536,
+      "distance": "Cosine",
+      "on_disk": true
     }
   }
 }

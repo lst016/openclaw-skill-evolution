@@ -1,61 +1,168 @@
 ---
 name: openclaw-skill-evolution
-description: OpenClaw Skill Evolution - 本地 Skill / Workflow 自进化层集成
+description: OpenClaw Skill Evolution - Local Skill/Workflow Self-Evolution Layer for OpenClaw Runtime
 metadata: {"openclaw":{"requires":{"bins":["python3", "git"]}}}
 ---
 
 # OpenClaw Skill Evolution
 
-**用途：** 在现有 OpenClaw 运行时中集成一套"本地 Skill / Workflow 自进化层"
+## 中文说明
 
-## 核心功能
+**用途**：在现有 OpenClaw 运行时中集成一套"本地 Skill / Workflow 自进化层"，持续优化以下对象：
 
-1. **skill memory** - 技能记忆存储与检索
-2. **workflow memory** - 工作流记忆存储与检索  
-3. **trajectory logging** - 任务轨迹记录
-4. **reflection engine** - 任务反思引擎
-5. **skill synthesizer** - 技能合成器
-6. **policy updater** - 策略更新器
-7. **qdrant vector memory backend** - 向量记忆后端
+1. skill（技能）
+2. workflow（工作流）  
+3. tool usage order（工具使用顺序）
+4. agent execution policy（Agent 执行策略）
+5. experience memory（经验记忆）
+6. reflection quality（反思质量）
 
-## 系统原则
-
+**核心原则**：
 - **不训练模型权重** - 只优化 skill/workflow/policy
 - **资产跨模型复用** - 所有沉淀结果在模型升级后仍然可复用
 - **版本化管理** - 所有 skill、workflow、policy 都可版本化、可回滚、可比较
 - **去重优先** - 所有新增知识必须先去重再写入
 - **证据驱动** - 所有 policy 更新必须基于重复成功证据
 
-## 目录结构
+## English Description
 
-按照方案要求创建完整的目录结构，包含 agents、skills、workflows、policies、logs、scripts、config 等模块。
+**Purpose**: Integrate a local Skill/Workflow Self-Evolution Layer into the existing OpenClaw runtime to continuously optimize:
 
-## Qdrant 集成
+1. Skills
+2. Workflows
+3. Tool usage order
+4. Agent execution policies
+5. Experience memory
+6. Reflection quality
 
-使用 Qdrant 作为 vector memory backend，创建 skills、workflows、experiences、trajectories 四个 collections。
+**Core Principles**:
+- **No Model Weight Training** - Only optimize skills/workflows/policies
+- **Cross-Model Asset Reusability** - All accumulated assets remain reusable after model upgrades
+- **Versioned Management** - All skills, workflows, and policies are versioned, rollbackable, and comparable
+- **Deduplication First** - All new knowledge must be deduplicated before writing
+- **Evidence-Driven** - All policy updates must be based on repeated successful evidence
 
-## 最小可用闭环
+## System Architecture
 
-第一版实现核心闭环：
-1. 执行任务并记录 trajectory
-2. 任务结束后做 reflection
-3. 高分任务提炼 experience 并写入 qdrant
-4. 当 3 个以上相近高分 trajectories 出现时生成 skill
-5. skill 稳定后更新 policy
+### v1 - Memory Layer
+- **Goal**: Accumulate experiences
+- **Focus**: Trajectory logging, reflection, experience storage
 
-## 禁止事项
+### v2 - Skill Evolution Layer  
+- **Goal**: Generate reusable skills and workflows
+- **Focus**: Skill synthesis from multiple trajectories, workflow comparison
 
-- ❌ 训练模型权重
-- ❌ 引入 LoRA / PPO / GRPO / SFT
-- ❌ 把 skill 进化逻辑写死在单个 prompt 中
-- ❌ 不做去重就无限写入经验
-- ❌ 基于一次成功立即改 policy
-- ❌ 不保存历史版本直接覆盖 skill
+### v3 - Policy Learning Layer
+- **Goal**: Automatically select optimal skill/workflow/tool order
+- **Focus**: Policy routing, policy quality evaluation, stable policy learning
 
-## 仓库地址
+## Directory Structure
+
+```
+.openclaw/
+├── agents/
+│   ├── main/                 # Main trajectory logger
+│   ├── planner/              # Task planning and resource retrieval
+│   ├── reflector/            # Post-task reflection and analysis
+│   ├── synthesizer/          # Skill synthesis from patterns
+│   ├── comparator/           # Workflow comparison and optimization
+│   ├── optimizer/            # Policy optimization
+│   ├── classifier/           # Task classification (v3)
+│   ├── critic/               # Policy quality evaluation (v3)
+│   ├── policy_router/        # Policy-based routing (v3)
+│   └── fallback_manager/     # Fallback management (v3)
+├── skills/
+│   ├── generated/            # Auto-generated skills
+│   ├── manual/               # Manually created skills
+│   ├── archived/             # Archived skills
+│   └── templates/            # Skill templates
+├── workflows/
+│   ├── generated/            # Auto-generated workflows
+│   ├── preferred/            # Preferred workflows
+│   ├── archived/             # Archived workflows
+│   └── task_types/           # Task-type specific workflows
+├── memory/
+│   └── qdrant/               # Qdrant vector database storage
+├── schemas/
+│   └── collections/          # Qdrant collection schemas
+├── snapshots/
+├── embeddings/
+├── cache/
+├── policies/
+│   ├── task_policy.json      # Task type routing policies
+│   ├── skill_policy.json     # Skill selection policies
+│   ├── workflow_policy.json  # Workflow selection policies
+│   ├── tool_policy.json      # Tool order policies
+│   ├── fallback_policy.json  # Fallback policies (v3)
+│   └── history/              # Policy update history
+├── logs/
+│   ├── trajectories/         # Complete task execution trajectories
+│   ├── rewards/              # Reward and scoring logs
+│   ├── reflections/          # Reflection results
+│   ├── evaluations/          # Evaluation results
+│   ├── daily_reports/        # Daily evolution reports
+│   ├── policy_updates/       # Policy update logs (v3)
+│   ├── critic/               # Critic evaluation logs (v3)
+│   └── routing/              # Routing decision logs (v3)
+├── reports/
+│   ├── evolution/            # Evolution reports
+│   └── policy/               # Policy performance reports (v3)
+├── scripts/
+│   ├── evolve/               # Evolution scripts
+│   ├── reflect/              # Reflection scripts
+│   ├── evaluate/             # Evaluation scripts
+│   ├── dedup/                # Deduplication scripts
+│   ├── backup/               # Backup scripts
+│   └── daily_evolution_loop.py # Daily evolution loop (v2/v3)
+└── config/
+    ├── qdrant.json           # Qdrant configuration
+    ├── thresholds.json       # Scoring and threshold configuration
+    ├── models.json           # Model configuration
+    └── evolution.json        # Evolution system configuration
+```
+
+## Qdrant Collections
+
+1. **skills** - Store reusable skills
+2. **workflows** - Store task-type workflows
+3. **experiences** - Store high-value experiences
+4. **trajectories** - Store complete task trajectories
+5. **policies** - Store policy mappings (v3)
+6. **failures** - Store high-value failure samples (v3)
+
+## Minimal Viable Loop
+
+### v1 Loop:
+```
+task → execute → trajectory → reflection → experience
+```
+
+### v2 Loop:
+```
+task → planner → skill search → workflow execution → trajectory → 
+reflection → workflow comparison → skill synthesis → policy optimization
+```
+
+### v3 Loop:
+```
+task → task classifier → policy router → skill selector → workflow selector → 
+executor → trajectory logger → critic/evaluator → policy updater → 
+update qdrant + policy files
+```
+
+## Prohibited Actions
+
+- ❌ Train model weights
+- ❌ Use PPO/GRPO/LoRA/Fine-tuning
+- ❌ Embed skill evolution logic in single prompts
+- ❌ Write experiences without deduplication
+- ❌ Update policies based on single success
+- ❌ Overwrite skills without versioning
+
+## Repository
 
 https://github.com/lst016/openclaw-skill-evolution.git
 
-## 维护者
+## Maintainer
 
-牛牛 🐮
+🐮 牛牛 (Niu Niu)

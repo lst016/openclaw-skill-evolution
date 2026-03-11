@@ -1,0 +1,24 @@
+{
+  "name": "policies",
+  "description": "存任务到 skill/workflow/tool order 的策略映射",
+  "payload_schema": {
+    "policy_id": {"type": "keyword"},
+    "task_type": {"type": "keyword"},
+    "preferred_skill": {"type": "keyword"},
+    "preferred_workflow": {"type": "keyword"},
+    "preferred_tool_order": {"type": "keyword", "array": true},
+    "confidence": {"type": "float"},
+    "success_rate": {"type": "float"},
+    "avg_score": {"type": "float"},
+    "usage_count": {"type": "integer"},
+    "version": {"type": "integer"},
+    "status": {"type": "keyword"},
+    "created_at": {"type": "datetime"},
+    "updated_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["task_type", "preferred_skill", "preferred_workflow"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}

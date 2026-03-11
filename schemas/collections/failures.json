@@ -1,0 +1,20 @@
+{
+  "name": "failures",
+  "description": "存放高价值失败样本",
+  "payload_schema": {
+    "failure_id": {"type": "keyword"},
+    "task_type": {"type": "keyword"},
+    "wrong_skill": {"type": "keyword"},
+    "wrong_workflow": {"type": "keyword"},
+    "wrong_tool_order": {"type": "keyword", "array": true},
+    "failure_reason": {"type": "text"},
+    "trajectory_id": {"type": "keyword"},
+    "score": {"type": "float"},
+    "created_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["task_type", "failure_reason"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}
