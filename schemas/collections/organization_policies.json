@@ -1,0 +1,22 @@
+{
+  "name": "organization_policies",
+  "description": "组织策略 - 任务到团队的映射",
+  "payload_schema": {
+    "policy_id": {"type": "keyword"},
+    "task_type": {"type": "keyword"},
+    "preferred_team": {"type": "keyword"},
+    "fallback_team": {"type": "keyword"},
+    "confidence": {"type": "float"},
+    "success_rate": {"type": "float"},
+    "avg_latency": {"type": "float"},
+    "version": {"type": "integer"},
+    "status": {"type": "keyword"},
+    "created_at": {"type": "datetime"},
+    "updated_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["task_type", "preferred_team", "fallback_team"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "teams",
+  "description": "Store agent team configurations and performance metrics",
+  "payload_schema": {
+    "team_id": {"type": "keyword"},
+    "roles": {"type": "keyword", "array": true},
+    "workflow": {"type": "text"},
+    "success_rate": {"type": "float"},
+    "avg_latency": {"type": "float"},
+    "version": {"type": "integer"},
+    "status": {"type": "keyword"},
+    "created_at": {"type": "datetime"},
+    "updated_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["roles", "workflow"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}

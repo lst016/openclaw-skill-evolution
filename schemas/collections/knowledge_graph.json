@@ -1,0 +1,19 @@
+{
+  "name": "knowledge_graph",
+  "description": "统一知识图谱，包含技能、工作流、环境、agent、任务等实体",
+  "payload_schema": {
+    "entity_id": {"type": "keyword"},
+    "entity_type": {"type": "keyword"},
+    "name": {"type": "text"},
+    "description": {"type": "text"},
+    "metadata": {"type": "text"},
+    "relationships": {"type": "text"},
+    "created_at": {"type": "datetime"},
+    "updated_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["name", "description", "entity_type"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}
