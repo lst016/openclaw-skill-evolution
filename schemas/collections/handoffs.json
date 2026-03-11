@@ -1,0 +1,21 @@
+{
+  "name": "handoffs",
+  "description": "Store specific handoff records between roles",
+  "payload_schema": {
+    "handoff_id": {"type": "keyword"},
+    "from_role": {"type": "keyword"},
+    "to_role": {"type": "keyword"},
+    "input_summary": {"type": "text"},
+    "output_summary": {"type": "text"},
+    "success": {"type": "boolean"},
+    "delay": {"type": "integer"},
+    "quality_score": {"type": "float"},
+    "trajectory_id": {"type": "keyword"},
+    "created_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["from_role", "to_role", "input_summary", "output_summary"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}

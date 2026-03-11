@@ -31,6 +31,16 @@
       "vector_size": 1536,
       "distance": "Cosine",
       "on_disk": true
+    },
+    "collaborations": {
+      "vector_size": 1536,
+      "distance": "Cosine",
+      "on_disk": true
+    },
+    "handoffs": {
+      "vector_size": 1536,
+      "distance": "Cosine",
+      "on_disk": true
     }
   }
 }

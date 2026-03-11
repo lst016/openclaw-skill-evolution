@@ -1,0 +1,22 @@
+{
+  "name": "collaborations",
+  "description": "存角色协作模式",
+  "payload_schema": {
+    "collaboration_id": {"type": "keyword"},
+    "task_type": {"type": "keyword"},
+    "role_sequence": {"type": "keyword", "array": true},
+    "handoff_points": {"type": "text"},
+    "success_rate": {"type": "float"},
+    "avg_score": {"type": "float"},
+    "usage_count": {"type": "integer"},
+    "version": {"type": "integer"},
+    "status": {"type": "keyword"},
+    "created_at": {"type": "datetime"},
+    "updated_at": {"type": "datetime"}
+  },
+  "embedding_fields": ["task_type", "role_sequence"],
+  "vector_config": {
+    "size": 1536,
+    "distance": "Cosine"
+  }
+}
