@@ -1,0 +1,21 @@
+{
+  "collection_name": "skills",
+  "fields": {
+    "skill_id": {"type": "keyword", "required": true},
+    "skill_name": {"type": "text", "required": true},
+    "description": {"type": "text", "required": true},
+    "applicable_when": {"type": "text", "required": true},
+    "steps": {"type": "array", "items": {"type": "string"}, "required": true},
+    "required_tools": {"type": "array", "items": {"type": "string"}, "required": true},
+    "success_rate": {"type": "float", "required": true, "default": 0.0},
+    "avg_score": {"type": "float", "required": true, "default": 0.0},
+    "usage_count": {"type": "integer", "required": true, "default": 0},
+    "version": {"type": "integer", "required": true, "default": 1},
+    "status": {"type": "keyword", "required": true, "default": "active"},
+    "source": {"type": "keyword", "required": false},
+    "tags": {"type": "array", "items": {"type": "keyword"}, "required": false, "default": []},
+    "created_at": {"type": "date", "required": true},
+    "updated_at": {"type": "date", "required": true}
+  },
+  "embedding_fields": ["skill_name", "description", "applicable_when", "tags"]
+}

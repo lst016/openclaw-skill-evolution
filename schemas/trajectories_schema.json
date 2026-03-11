@@ -1,0 +1,19 @@
+{
+  "collection_name": "trajectories",
+  "fields": {
+    "trajectory_id": {"type": "keyword", "required": true},
+    "task": {"type": "text", "required": true},
+    "task_type": {"type": "keyword", "required": true},
+    "selected_skill": {"type": "keyword", "required": false},
+    "selected_workflow": {"type": "keyword", "required": false},
+    "steps": {"type": "array", "items": {"type": "object"}, "required": true},
+    "tools_used": {"type": "array", "items": {"type": "keyword"}, "required": true},
+    "outputs_summary": {"type": "text", "required": true},
+    "success": {"type": "boolean", "required": true},
+    "final_score": {"type": "float", "required": true, "default": 0.0},
+    "duration_ms": {"type": "integer", "required": true, "default": 0},
+    "reflection_id": {"type": "keyword", "required": false},
+    "created_at": {"type": "date", "required": true}
+  },
+  "embedding_fields": ["task", "task_type", "outputs_summary"]
+}

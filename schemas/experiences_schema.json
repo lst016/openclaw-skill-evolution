@@ -1,0 +1,20 @@
+{
+  "collection_name": "experiences",
+  "fields": {
+    "experience_id": {"type": "keyword", "required": true},
+    "title": {"type": "text", "required": true},
+    "problem_summary": {"type": "text", "required": true},
+    "solution_summary": {"type": "text", "required": true},
+    "workflow": {"type": "array", "items": {"type": "string"}, "required": true},
+    "score": {"type": "float", "required": true, "default": 0.0},
+    "success_count": {"type": "integer", "required": true, "default": 0},
+    "fail_count": {"type": "integer", "required": true, "default": 0},
+    "last_used_at": {"type": "date", "required": false},
+    "source_trajectory_id": {"type": "keyword", "required": true},
+    "tags": {"type": "array", "items": {"type": "keyword"}, "required": false, "default": []},
+    "status": {"type": "keyword", "required": true, "default": "active"},
+    "created_at": {"type": "date", "required": true},
+    "updated_at": {"type": "date", "required": true}
+  },
+  "embedding_fields": ["title", "problem_summary", "solution_summary", "tags"]
+}
