@@ -1,0 +1,10 @@
+{
+  "model": "BAAI/bge-large-zh-v1.5",
+  "dimension": 1024,
+  "max_length": 512,
+  "batch_size": 32,
+  "device": "mps",
+  "cache_dir": "/Users/lst01/.cache/openclaw-embeddings",
+  "similarity_threshold": 0.75,
+  "enable_cache": true
+}

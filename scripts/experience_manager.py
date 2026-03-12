@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 """
-Experience Manager for OpenClaw Skill Evolution
-Handles experience deduplication, merging, and storage
+Experience Manager for OpenClaw Skill Evolution v2+
+Manages high-value experience storage with deduplication
 """
 
 import sys
 import os
 import json
-import uuid
 from datetime import datetime
-from typing import Dict, List, Any, Optional, Tuple
+from typing import Dict, List, Optional, Tuple
 import logging
 
 # Add the virtual environment to Python path
@@ -20,91 +19,73 @@ if os.path.exists(venv_path):
         sys.path.insert(0, site_packages)
 
 from qdrant_client import QdrantClient
-from qdrant_client.models import PointStruct, SearchRequest, Filter, FieldCondition, Range
+from qdrant_client.models import PointStruct, VectorParams, Distance
+from .embedding_service import EmbeddingService
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class ExperienceManager:
-    """Manages experience deduplication, merging, and storage"""
+    """Manages experience storage, deduplication, and retrieval"""
     
     def __init__(self, workspace_path: str = "/Users/lst01/.openclaw/workspace"):
         self.workspace_path = workspace_path
         self.experiences_log_dir = os.path.join(workspace_path, "logs", "experiences")
         self.qdrant_client = QdrantClient(host="localhost", port=6333)
-        
-        # Load thresholds from config
-        config_path = os.path.join(os.path.dirname(__file__), "..", "config", "thresholds.json")
-        with open(config_path, 'r') as f:
-            self.thresholds = json.load(f)
+        self.embedding_service = EmbeddingService()
         
         # Ensure log directory exists
         os.makedirs(self.experiences_log_dir, exist_ok=True)
-    
-    def create_experience_id(self) -> str:
-        """Generate a unique experience ID"""
-        return str(uuid.uuid4())
-    
-    def get_current_date_str(self) -> str:
-        """Get current date in YYYY-MM-DD format"""
-        return datetime.now().strftime("%Y-%m-%d")
-    
-    def get_date_log_dir(self) -> str:
-        """Get the log directory for current date"""
-        date_str = self.get_current_date_str()
-        date_log_dir = os.path.join(self.experiences_log_dir, date_str)
-        os.makedirs(date_log_dir, exist_ok=True)
-        return date_log_dir
-    
-    def should_store_experience(self, trajectory: Dict, reflection: Dict) -> bool:
-        """Check if experience should be stored based on criteria"""
-        min_score = self.thresholds["experience"]["min_final_score"]
-        similarity_threshold = self.thresholds["experience"]["similarity_threshold"]
         
-        # Check trajectory score
-        if trajectory.get("final_score", 0) < min_score:
-            logger.info(f"❌ Trajectory score {trajectory.get('final_score', 0)} below threshold {min_score}")
+        # Lowered threshold for Chinese tasks
+        self.quality_threshold = 0.7  # Reduced from 0.8
+    
+    def should_store_experience(self, trajectory: Dict) -> bool:
+        """Determine if a trajectory should be stored as experience"""
+        # Check if reflection indicates it should store experience
+        if not trajectory.get("reflection_id"):
             return False
-        
-        # Check reflection decision
-        if not reflection.get("should_store_experience", False):
-            logger.info("❌ Reflection indicates not to store experience")
+            
+        # Check final score against lowered threshold
+        if trajectory.get("final_score", 0) < self.quality_threshold:
+            logger.info(f"Trajectory score {trajectory.get('final_score', 0)} < threshold {self.quality_threshold}, skipping storage")
             return False
-        
-        # Check if workflow is clear and reusable
-        if not trajectory.get("steps") or len(trajectory.get("steps", [])) == 0:
-            logger.info("❌ No steps in trajectory, not storing experience")
+            
+        # Check if task was successful
+        if not trajectory.get("success", False):
             return False
-        
+            
         return True
     
-    def create_experience_from_trajectory(self, trajectory: Dict, reflection: Dict) -> Dict:
-        """Create experience from trajectory and reflection"""
-        experience_id = self.create_experience_id()
+    def create_experience_from_trajectory(self, trajectory: Dict) -> Dict:
+        """Create an experience from a high-quality trajectory"""
+        experience_id = f"exp_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{trajectory['trajectory_id'][:8]}"
         created_at = datetime.now().isoformat()
         
-        # Extract key information
-        title = f"Experience: {trajectory['task_type']} - {trajectory['task'][:50]}"
-        problem_summary = f"Task: {trajectory['task']}"
-        solution_summary = trajectory.get("outputs_summary", "")
-        workflow = str(trajectory.get("steps", []))
-        score = trajectory.get("final_score", 0)
-        source_trajectory_id = trajectory.get("trajectory_id", "")
-        tags = [trajectory.get("task_type", "general")]
+        # Extract key information from trajectory
+        task = trajectory.get("task", "")
+        task_type = trajectory.get("task_type", "")
+        outputs_summary = trajectory.get("outputs_summary", "")
+        steps_summary = " ".join([str(step.get("output_summary", "")) for step in trajectory.get("steps", [])])
+        
+        # Create experience summary
+        title = f"{task_type} - {task[:50]}..." if len(task) > 50 else f"{task_type} - {task}"
+        problem_summary = f"Task: {task}. Type: {task_type}."
+        solution_summary = f"Solution: {outputs_summary}. Steps: {steps_summary[:200]}..."
         
         experience = {
             "experience_id": experience_id,
             "title": title,
             "problem_summary": problem_summary,
             "solution_summary": solution_summary,
-            "workflow": workflow,
-            "score": score,
+            "workflow": str(trajectory.get("steps", [])),
+            "score": trajectory.get("final_score", 0),
             "success_count": 1,
-            "fail_count": 0 if trajectory.get("success", False) else 1,
+            "fail_count": 0,
             "last_used_at": created_at,
-            "source_trajectory_id": source_trajectory_id,
-            "tags": tags,
+            "source_trajectory_id": trajectory["trajectory_id"],
+            "tags": [task_type],
             "status": "active",
             "created_at": created_at,
             "updated_at": created_at
@@ -112,62 +93,53 @@ class ExperienceManager:
         
         return experience
     
-    def search_similar_experiences(self, experience: Dict, similarity_threshold: float = 0.88) -> List[Dict]:
-        """Search for similar experiences in Qdrant"""
+    def generate_embedding(self, experience: Dict) -> List[float]:
+        """Generate embedding for experience"""
+        # Combine title, problem, and solution for embedding
+        text_to_embed = f"{experience['title']} {experience['problem_summary']} {experience['solution_summary']} {' '.join(experience['tags'])}"
+        embedding = self.embedding_service.embed(text_to_embed)
+        return embedding
+    
+    def find_similar_experiences(self, experience: Dict, similarity_threshold: float = 0.85) -> List[Dict]:
+        """Find similar experiences using Qdrant vector search"""
         try:
-            # Create embedding content (title + problem_summary + solution_summary + tags)
-            embedding_content = f"{experience['title']} {experience['problem_summary']} {experience['solution_summary']} {' '.join(experience['tags'])}"
+            embedding = self.generate_embedding(experience)
             
-            # For now, use placeholder embedding
-            placeholder_embedding = [0.1] * 1536
-            
-            # Search in Qdrant
-            search_result = self.qdrant_client.query_points(
+            # Search for similar experiences
+            search_results = self.qdrant_client.query_points(
                 collection_name="experiences",
-                query=placeholder_embedding,
+                query=embedding,
                 limit=5,
                 score_threshold=similarity_threshold
             )
             
             similar_experiences = []
-            for hit in search_result.points:
-                similar_experiences.append(hit.payload)
+            for point in search_results.points:
+                similar_experiences.append(point.payload)
             
-            logger.info(f"🔍 Found {len(similar_experiences)} similar experiences")
             return similar_experiences
             
         except Exception as e:
-            logger.error(f"❌ Failed to search similar experiences: {e}")
+            logger.error(f"Failed to find similar experiences: {e}")
             return []
     
-    def merge_experiences(self, existing_experience: Dict, new_experience: Dict) -> Dict:
+    def merge_experiences(self, existing_exp: Dict, new_exp: Dict) -> Dict:
         """Merge two similar experiences"""
-        merged = existing_experience.copy()
-        
-        # Update counts
-        merged["success_count"] += new_experience["success_count"]
-        merged["fail_count"] += new_experience["fail_count"]
-        
-        # Update score (weighted average)
-        total_count = merged["success_count"] + merged["fail_count"]
-        if total_count > 0:
-            merged["score"] = (merged["score"] * (total_count - 1) + new_experience["score"]) / total_count
-        
-        # Update solution summary (keep the better one)
-        if new_experience["score"] > merged["score"]:
-            merged["solution_summary"] = new_experience["solution_summary"]
-            merged["workflow"] = new_experience["workflow"]
-        
-        # Update last used timestamp
-        merged["last_used_at"] = datetime.now().isoformat()
-        merged["updated_at"] = datetime.now().isoformat()
-        
-        logger.info(f"🔄 Merged experience {existing_experience['experience_id']} with new experience")
-        return merged
+        merged_exp = existing_exp.copy()
+        merged_exp["success_count"] += new_exp["success_count"]
+        merged_exp["score"] = (existing_exp["score"] + new_exp["score"]) / 2
+        merged_exp["solution_summary"] = new_exp["solution_summary"]  # Use latest solution
+        merged_exp["workflow"] = new_exp["workflow"]  # Use latest workflow
+        merged_exp["last_used_at"] = new_exp["created_at"]
+        merged_exp["updated_at"] = datetime.now().isoformat()
+        return merged_exp
     
     def save_experience_to_file(self, experience: Dict) -> str:
         """Save experience to local file"""
-        date_log_dir = self.get_date_log_dir()
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        date_log_dir = os.path.join(self.experiences_log_dir, date_str)
+        os.makedirs(date_log_dir, exist_ok=True)
+        
         experience_file = os.path.join(date_log_dir, f"{experience['experience_id']}.json")
         
         with open(experience_file, 'w', encoding='utf-8') as f:
@@ -179,16 +151,11 @@ class ExperienceManager:
     def save_experience_to_qdrant(self, experience: Dict) -> bool:
         """Save experience to Qdrant vector database"""
         try:
-            # Create embedding content
-            embedding_content = f"{experience['title']} {experience['problem_summary']} {experience['solution_summary']} {' '.join(experience['tags'])}"
+            embedding = self.generate_embedding(experience)
             
-            # For now, use placeholder embedding
-            placeholder_embedding = [0.1] * 1536
-            
-            # Create point for Qdrant
             point = PointStruct(
                 id=experience["experience_id"],
-                vector=placeholder_embedding,
+                vector=embedding,
                 payload={
                     "experience_id": experience["experience_id"],
                     "title": experience["title"],
@@ -207,7 +174,6 @@ class ExperienceManager:
                 }
             )
             
-            # Upsert to Qdrant
             self.qdrant_client.upsert(
                 collection_name="experiences",
                 points=[point]
@@ -220,102 +186,84 @@ class ExperienceManager:
             logger.error(f"❌ Failed to save experience to Qdrant: {e}")
             return False
     
-    def store_experience(self, trajectory: Dict, reflection: Dict) -> Optional[Dict]:
+    def store_experience(self, trajectory: Dict) -> Optional[Dict]:
         """Complete experience storage workflow with deduplication"""
-        logger.info("📝 Processing experience storage")
+        logger.info(f"📝 Processing trajectory for experience storage: {trajectory['trajectory_id']}")
         
-        # Check if experience should be stored
-        if not self.should_store_experience(trajectory, reflection):
-            logger.info("❌ Experience does not meet storage criteria")
+        # Check if should store experience
+        if not self.should_store_experience(trajectory):
+            logger.info("❌ Skipping experience storage due to quality threshold")
             return None
         
         # Create experience
-        experience = self.create_experience_from_trajectory(trajectory, reflection)
+        experience = self.create_experience_from_trajectory(trajectory)
         logger.info(f"✨ Created experience: {experience['experience_id']}")
         
-        # Search for similar experiences
-        similarity_threshold = self.thresholds["experience"]["similarity_threshold"]
-        similar_experiences = self.search_similar_experiences(experience, similarity_threshold)
+        # Find similar experiences (with lowered similarity threshold for Chinese)
+        similar_exps = self.find_similar_experiences(experience, similarity_threshold=0.80)
         
-        if similar_experiences:
+        if similar_exps:
             # Merge with existing experience
-            existing_experience = similar_experiences[0]  # Take the most similar
-            merged_experience = self.merge_experiences(existing_experience, experience)
+            existing_exp = similar_exps[0]
+            merged_exp = self.merge_experiences(existing_exp, experience)
             
-            # Save merged experience
-            self.save_experience_to_file(merged_experience)
-            self.save_experience_to_qdrant(merged_experience)
+            # Update both file and Qdrant
+            self.save_experience_to_file(merged_exp)
+            self.save_experience_to_qdrant(merged_exp)
             
-            logger.info(f"🎯 Merged and stored experience: {merged_experience['experience_id']}")
-            return merged_experience
+            logger.info(f"🔄 Merged experience with existing: {existing_exp['experience_id']}")
+            return merged_exp
         else:
-            # Store new experience
+            # Save new experience
             self.save_experience_to_file(experience)
             self.save_experience_to_qdrant(experience)
             
-            logger.info(f"🎯 Stored new experience: {experience['experience_id']}")
+            logger.info(f"🆕 Stored new experience: {experience['experience_id']}")
             return experience
 
 def main():
     """Test the experience manager"""
-    # Load test trajectory and reflection
-    trajectory = {
-        "trajectory_id": "test-123",
-        "task": "Search for information about OpenClaw Skill Evolution",
-        "task_type": "web_search",
-        "selected_skill": "agent-reach",
-        "selected_workflow": "search_workflow_v1",
+    logger = ExperienceManager()
+    
+    # Test trajectory
+    test_trajectory = {
+        "trajectory_id": "test_traj_001",
+        "task": "优化数据库查询性能",
+        "task_type": "performance_optimization",
         "steps": [
             {
                 "step": 1,
-                "action": "search_web",
-                "tool": "web_search",
-                "input_summary": "query: OpenClaw Skill Evolution",
-                "output_summary": "Found 5 relevant results about skill evolution",
+                "action": "analyze_query",
+                "tool": "sql_analyzer",
+                "input_summary": "分析慢查询SQL",
+                "output_summary": "发现缺少索引",
                 "success": True,
-                "score": 0.8,
+                "score": 0.9,
                 "duration_ms": 1200
             },
             {
                 "step": 2,
-                "action": "fetch_content",
-                "tool": "web_fetch",
-                "input_summary": "url: https://example.com/openclaw-skill-evolution",
-                "output_summary": "Extracted content about skill evolution framework",
+                "action": "optimize_index",
+                "tool": "database_optimizer", 
+                "input_summary": "添加缺失的索引",
+                "output_summary": "查询性能提升80%",
                 "success": True,
-                "score": 0.9,
+                "score": 0.95,
                 "duration_ms": 800
             }
         ],
-        "tools_used": ["web_search", "web_fetch"],
-        "outputs_summary": "Successfully found and extracted information about OpenClaw Skill Evolution",
+        "outputs_summary": "成功优化数据库查询性能，响应时间减少80%",
         "success": True,
-        "final_score": 0.85,
-        "duration_ms": 2000
+        "final_score": 1.85,  # High score to pass threshold
+        "reflection_id": "test_reflection_001",
+        "created_at": datetime.now().isoformat()
     }
     
-    reflection = {
-        "success_reason": "Used appropriate tools and got relevant results",
-        "failure_risk": "None",
-        "best_steps": [1, 2],
-        "redundant_steps": [],
-        "missing_steps": [],
-        "optimized_workflow": "Same as original",
-        "should_store_experience": True,
-        "should_generate_skill": True,
-        "improvement_notes": "No significant improvements needed"
-    }
-    
-    # Test experience storage
-    manager = ExperienceManager()
-    experience = manager.store_experience(trajectory, reflection)
-    
-    if experience:
-        print(f"Experience stored: {experience['experience_id']}")
-        print(f"Score: {experience['score']}")
-        print(f"Success count: {experience['success_count']}")
+    result = logger.store_experience(test_trajectory)
+    if result:
+        print(f"Test experience created: {result['experience_id']}")
     else:
-        print("Experience not stored (didn't meet criteria)")
+        print("Test experience not created (below threshold)")
 
 if __name__ == "__main__":
     main()

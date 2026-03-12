@@ -3,42 +3,72 @@
   "port": 6333,
   "collections": {
     "skills": {
-      "vector_size": 1536,
+      "vector_size": 1024,
       "distance": "Cosine",
       "on_disk": true
     },
     "workflows": {
-      "vector_size": 1536,
+      "vector_size": 1024,
       "distance": "Cosine", 
       "on_disk": true
     },
     "experiences": {
-      "vector_size": 1536,
+      "vector_size": 1024,
       "distance": "Cosine",
       "on_disk": true
     },
     "trajectories": {
-      "vector_size": 1536,
+      "vector_size": 1024,
       "distance": "Cosine",
       "on_disk": true
     },
     "policies": {
-      "vector_size": 1536,
+      "vector_size": 1024,
       "distance": "Cosine",
       "on_disk": true
     },
     "failures": {
-      "vector_size": 1536,
+      "vector_size": 1024,
       "distance": "Cosine",
       "on_disk": true
     },
     "collaborations": {
-      "vector_size": 1536,
+      "vector_size": 1024,
       "distance": "Cosine",
       "on_disk": true
     },
     "handoffs": {
-      "vector_size": 1536,
+      "vector_size": 1024,
+      "distance": "Cosine",
+      "on_disk": true
+    },
+    "environment_nodes": {
+      "vector_size": 1024,
+      "distance": "Cosine",
+      "on_disk": true
+    },
+    "environment_events": {
+      "vector_size": 1024,
+      "distance": "Cosine",
+      "on_disk": true
+    },
+    "agents": {
+      "vector_size": 1024,
+      "distance": "Cosine",
+      "on_disk": true
+    },
+    "teams": {
+      "vector_size": 1024,
+      "distance": "Cosine",
+      "on_disk": true
+    },
+    "organization_policies": {
+      "vector_size": 1024,
+      "distance": "Cosine",
+      "on_disk": true
+    },
+    "knowledge_graph": {
+      "vector_size": 1024,
       "distance": "Cosine",
       "on_disk": true
     }

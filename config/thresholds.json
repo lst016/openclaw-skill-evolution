@@ -1,34 +1,34 @@
 {
   "experience": {
-    "min_final_score": 0.8,
-    "similarity_threshold": 0.9,
+    "min_final_score": 0.7,
+    "similarity_threshold": 0.85,
     "min_success_count": 1
   },
   "skill": {
     "min_similar_tasks": 3,
-    "min_avg_score": 0.7,
-    "min_success_rate": 0.8
+    "min_avg_score": 0.65,
+    "min_success_rate": 0.75
   },
   "policy": {
     "min_evidence_count": 5,
-    "confidence_threshold": 0.85
+    "confidence_threshold": 0.8
   },
   "scoring": {
     "task_success": 1.0,
     "task_failure": -1.0,
     "validation_passed": 0.3,
-    "high_quality_result": 0.2,
-    "unnecessary_steps": -0.2,
-    "introduced_errors": -0.5,
+    "high_quality_result": 0.25,
+    "unnecessary_steps": -0.15,
+    "introduced_errors": -0.4,
     "no_validation": -0.2,
-    "correct_context": 0.1,
-    "correct_target": 0.1,
-    "effective_tool_call": 0.1,
-    "effective_modification": 0.2,
+    "correct_context": 0.12,
+    "correct_target": 0.12,
+    "effective_tool_call": 0.15,
+    "effective_modification": 0.25,
     "completed_verification": 0.2,
     "ineffective_search": -0.1,
     "repeated_action": -0.1,
     "wrong_tool": -0.2,
-    "circular_attempts": -0.3
+    "circular_attempts": -0.25
   }
 }
